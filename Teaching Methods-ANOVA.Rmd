@@ -1,0 +1,383 @@
+---
+title: 'ANCOVA: Analysis of Covariance'
+author: "Hotheifa Al-3Assi"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{teach}
+\end{figure}
+
+\vspace{2cm}
+Education is a vital part of our lives, helping us to understand everything and improve in all aspects. Therefore, developing the educational process and its methods is crucial.
+
+This study aims to compare three teaching methods—traditional(Group1), online(Group2), and blended(Group3)—to determine if the teaching method significantly impacts students' final exam scores. Forty-Five students were randomly assigned to one of the three teaching methods. All students took a standardized final exam at the end of the course. Results from pre-tests, administered before the course began, were available and will be considered in the analysis.
+
+Are there differences between teaching methods when controlling the pre-test? \ 
+
+We want to know if there is a difference between the three teaching methods? \
+
+Did the students' pre-test scores affect their final exam scores? \
+
+Did the teaching methods and pre-test results influence the final exam?
+\newpage
+
+### The Data:
+First six Rows:
+
+```{r echo=FALSE}
+mydata=read.csv("anxiety.csv",header = TRUE,sep=",") 
+#######################################################################
+library(knitr)
+kable(mydata[1:6,-c(1)],col.names = c("Id","Group","Pre_test","Post_test"), align="l",caption ="The Data")
+
+```
+
+last six rows:
+```{r echo=FALSE}
+kable(mydata[39:45,-c(1,2)],col.names = c("Id","Group","Pre_test","Post_test"), align="l",caption ="The Data")
+```
+
+
+Dimensions of the Data set:
+
+```{r echo=FALSE}
+dim_table = data.frame(Dimension = c("Number of Rows", "Number of Columns"),Value = dim(mydata[,-c(1,2)]))
+kable(dim_table,caption = "Dimensions of the Dataset")
+```
+
+Table 3 shows that the sample size is 45 and Variables we interest is 3: Group, Pre-test and Post-test.
+
+### Varable type :
+```{r echo=FALSE}
+str_table <- data.frame(
+  Variable = names(mydata[,-c(1,2)]),
+  Type = sapply(mydata[,-c(1,2)], class),
+  Example = sapply(mydata[,-c(1,2)], function(x) {vals <- x[!is.na(x)]    
+vals <- head(vals, 3)
+paste(as.character(vals), collapse = ",")}),row.names = NULL)
+kable(str_table,caption = "Structure of the Dataset")
+```
+Table 4 shows that the variables pre-test,post-test is numerical and  The variable Group is Categorical. 
+
+### Descriptives Statistics For Numirical Variables :
+* The Numerical Descriptive Statistics:
+```{r echo=FALSE}
+library(psych)
+des=describe(mydata[,-c(1,2,3)])
+kable(des[,-c(1,2,6,7,10,11,12)],caption = "Descriptives Statistics for Numirical Variable",digits=2,longtable = FALSE)
+```
+Table 5 shows that the mean of pre-test is 16.92 and the Standard deviation is 1.49
+and the mean of post-test is  15.24	 and Standard deviation 2.02.	
+
+
+* The Graphical Descriptive Statistics:
+
+
+```{r echo=FALSE,fig.align="center"}
+boxplot(mydata[,-c(1,2,3)],col="red",horizontal = TRUE,main="Figure 1: Boxplot of Numirical Variables ")
+```
+Figure 1 shows that the mean of Pre-Test is higher than the Mean of the Post-Test
+,while the spread of Post-test is higher than the spread of Pre-Test.
+
+
+\newpage
+### Categorical Variables :
+
+Traditional Method (Group1), Online Method(Group2), and Blended Method(Group3)
+All the Groups have the same size $n_i=15$ , $i=1,2,3$.
+
+
+```{r echo=FALSE, fig.align='center', fig.height=3.5,fig.show='hold', out.width="90%"}
+attach(mydata)
+boxplot(pretest~group,col="red",main="Figure 2: Boxplot for Pre-Test with Groups")
+
+```
+
+Figure 2  shows that the mean for each group in the pre-test is almost equal, while there is a small difference in spread.
+
+```{r echo=FALSE, fig.align='center',fig.height=3.5, fig.show='hold', out.width="90%"}
+boxplot(posttest~group,col="red",main="Figure 3 : Boxplot for Post-Test with Groups")
+```
+
+Figure 3 shows that the mean for each group in the pre-test is difference , while there is a small difference in spread.
+
+\newpage
+## Inference Statistics:
+For inferential statistics, we used regression analysis where the response variable was the Post-test which is numerical and the predictors were the pre-test which is numerical and the Groups which is Categorical.The results given in Table 6.
+
+```{r echo=FALSE}
+group1=factor(group)
+library(knitr)
+post_lm= lm( posttest~ pretest+ group1,data=mydata)
+kable(as.data.frame(summary(post_lm)$coefficients) ,digits = 4,caption = " Regression Analysis")
+
+```
+### The results Show that : 
+$\hat{B}_1$= 1.0278, When the pre-test increases by one Grade, the post-test average increases by 1.0278
+With other factors remaining constant. 
+
+$\hat{B}_2$=-0.6411, When moving from the traditional teaching method to online teaching methods will lower the average of post-test by -0.6411,With other factors remaining constant. 
+
+$\hat{B}_3$=-2.9846, When moving from the traditional teaching method to blended teaching methods will lower the average of post-test by -2.9846,With other factors remaining constant. 
+
+_____________________________________________________________________________________________________
+
+### The Hypotheses:
+
+Adjusted Post-Test: 
+
+$H_0$:There are no statistically significant differences between the adjusted post-test means of the three teaching methods (after adjusting for pre-test) between the groups.
+
+$H_1$:There is at least one statistically significant difference between the adjusted post-test means between the groups.
+
+$p$-value for $\hat{\beta}_2$= 0.0001< $\alpha = 0.05$ , $p$-value for $\hat{\beta}_3$=0.0000 <$\alpha = 0.05$ ,  we reject $H_0$ at  $\alpha = 0.05$,There is statistically significant difference between the adjusted post-test means between the groups. 
+
+### check the assumption :
+We will now verify the assumptions of the linear regression model shown above. \
+The results are shown in the figure:
+```{r echo=FALSE,fig.align='center'}
+par(mfrow=c(2,2))
+plot(post_lm, which = 1, main = "Figure 4-A:")
+plot(post_lm, which = 2, main = "Figure 4-B:")
+plot(post_lm, which = 3, main = "Figure 4-c:")
+plot(post_lm, which = 5, main = "Figure 4-D:")
+```
+* Figure 4-A: Residuals vs Fitted plot :
+The points appear scattered around zero; there is no specific pattern, and linearity is achieved.\
+
+
+* Figure 4-B: Q-Q Residuals plot : 
+The points nearly lie on a straight line; the data follow a normal distribution. 
+
+* Figure 4-C: Scale-Location :
+The points appear scattered around zero; there is no specific pattern,Constant variance is achieved. 
+
+* Figure 4-D: Residuals vs Leverage :
+The diagnostic plot of residuals versus leverage indicated no highly influential observations, as no data points exceeded Cook’s Distance thresholds.
+
+
+______________________________________________________________________________________________________
+#### Difference between the three teaching methods: \
+
+we used analysis of variance to find the difference between the three teaching methods,where the response is post-Test which is numerical and Groups which is categorical.
+The results given in Table 7.
+```{r echo=FALSE}
+group_model = aov(posttest ~ group1, data = mydata)
+
+anova_table = summary(group_model)[[1]]
+
+kable(anova_table, digits = 5, caption = "ANOVA Table")
+
+```
+The Hypotheses: \
+$H_0$:There is no statistically significant differences between means of the three teaching methods.\
+
+$H_a$:There is statistically significant differences between means of the three teaching methods. \
+
+$p-value$= 0.00002 < $\alpha = 0.05$ , we reject $H_0$ at $\alpha = 0.05$,There is statistically significant differences between means of the three teaching methods.
+ 
+_________________________________________________________________________________________________
+
+check the assumption :
+```{r echo=FALSE, fig.align='center'}
+par(mfrow=c(2,2))
+plot(group_model, which = 1, main = "Figure 5-A:")
+plot(group_model, which = 2, main = "Figure 5-B:")
+plot(group_model, which = 3, main = "Figure 5-c:")
+plot(group_model, which = 5, main = "Figure 5-D:")
+```
+* Figure 5-A: Residuals vs Fitted plot :
+The points appear scattered around zero; there is no specific pattern.\
+
+
+* Figure 5-B: Q-Q Residuals plot : 
+The points nearly lie on a straight line; the data follow a normal distribution. 
+
+* Figure 5-C: Scale-Location :
+The points appear scattered around zero; there is no specific pattern,Constant variance is achieved. 
+
+* Figure 5-D: Residuals vs Leverage :
+The diagnostic plot of residuals versus leverage indicated no highly influential observations, as no data points exceeded Cook’s Distance thresholds.
+
+\newpage
+### Pairwise Comparisons:
+Since we rejected the null hypothesis, this means that there are differences between the means. The comparison method was used Bonferroni. Table 8 shows the results:
+```{r echo=FALSE}
+com=pairwise.t.test(posttest,group1,"bonferroni")
+p_matrix <- com$p.value
+kable(p_matrix, digits = 4, caption = "Pairwise Comparisons (Bonferroni Adjustment)")
+```
+The Hypotheses: \
+
+* Traditional Method (Group1) and Online Method(Group2).\
+
+$H_0: \mu_{Traditional} = \mu_{Online}$.\
+
+$H_1: \mu_{Traditional} \neq \mu_{Online}$.\
+
+$p-value$=0.2074 < $\alpha = 0.05$, we do not reject $H_0$ at $\alpha = 0.05$,there is no difference between Traditional and Online Methods.\
+
+________________________________________________________________________________________________
+* Traditional Method (Group1) and Blended Method(Group3).\ 
+
+$H_0: \mu_{Traditional} = \mu_{Blended}$.\
+
+$H_1: \mu_{Traditional} \neq \mu_{Blended}$.\
+
+$p-value$=	0.0000 < $\alpha = 0.05$, we reject $H_0$ at $\alpha = 0.05$,there is difference between Traditional and Blended Methods.
+
+________________________________________________________________________________________________
+* Online Method (Group2) and Blended Method(Group3).\
+
+$H_0: \mu_{Online} = \mu_{Blended}$.\
+
+$H_1: \mu_{Online} \neq \mu_{Blended}$.\
+
+$p-value$=	0.0051 < $\alpha = 0.05$, we reject $H_0$ at $\alpha = 0.05$,we reject $H_0$ at $\alpha = 0.05$,there is difference between Online and Blended Methods.
+
+
+
+\newpage
+
+Pre-Test on Post-Test: \
+
+To Study the relationship between Pre-Test and Post-Test  we used regression analysis where the response variable was the Post-test which is numerical and the predictors were the pre-test which is numerical. The results given in Table 9.
+```{r echo=FALSE}
+pree_model=lm(posttest~pretest,data=mydata)
+kable(as.data.frame(summary(pree_model)$coefficients) ,digits = 4,caption = " Regression Analysis")
+```
+#### The results Show that :\
+
+
+$\hat{B}_1$= 1.0094	, When the pre-test increases by one Grade, the post-test average increases by 1.0278.\
+
+__________________________________________________________________________________________________
+
+The Hypotheses: \
+
+$H_0:$:There is no statistically significant effect of pre-test on post-test.
+$H_1:$There is  statistically significant effect of pre-test on post-test.\
+
+$p$-value for $\hat{\beta}_2$= 0.0000< $\alpha = 0.05$ ,we reject $H_0$ at  $\alpha = 0.05$,there is  statistically significant effect of pre-test on post-test.\
+
+\newpage
+check the assumption :
+
+```{r echo=FALSE, fig.align='center'}
+
+par(mfrow=c(2,2))
+plot(pree_model, which = 1, main = "Figure 6-A:")
+plot(pree_model, which = 2, main = "Figure 6-B:")
+plot(pree_model, which = 3, main = "Figure 6-c:")
+plot(pree_model, which = 5, main = "Figure 6-D:")
+```
+* Figure 6-A: Residuals vs Fitted plot :
+The points appear scattered around zero; there is no specific pattern, and linearity is achieved.\
+
+
+* Figure 6-B: Q-Q Residuals plot : 
+The points nearly lie on a straight line; the data follow a normal distribution. 
+
+* Figure 6-C: Scale-Location :
+The points appear scattered around zero; there is no specific pattern,Constant variance is achieved. 
+
+* Figure 4-D: Residuals vs Leverage :
+The diagnostic plot of residuals versus leverage indicated no highly influential observations, as no data points exceeded Cook’s Distance thresholds.
+
+\newpage
+### Interaction:
+
+For Interaction we used regression analysis where the response variable was the Post-test which is numerical and the predictors were the pre-test which is numerical and the Groups which is Categorical.The results given in Table 10.
+```{r echo=FALSE}
+group1=factor(group)
+library(knitr)
+post_lm1= lm( posttest~ pretest+ group1+ pretest:group1,data=mydata)
+kable(as.data.frame(summary(post_lm1)$coefficients) ,digits = 4,caption = "Regression Analysis With Interaction")
+```
+#### The results Show that :\
+
+$\hat{B}_1$= 1.0128, When the pre-test increases by one unit, the post-test average increases by 1.0128
+With other factors remaining constant. \
+
+$\hat{B}_2$=-1.3770, when Using online teaching methods will decreases the average of post-test by -1.3770
+With other factors remaining constant. \
+
+$\hat{B}_3$=-2.9349	,when Using blended teaching methods will decreases the average of post-test by -2.9349
+With other factors remaining constant. 
+
+$\hat{B}_4$= 0.0438,when the interaction between the pre-test and the group2 increases by one unit   the Post-test average increase by 0.0438 With other factors remaining constant.
+
+$\hat{B}_5$=-0.0030	when the interaction between the pre-test and the group3 increases by one unit   the Post-test average decreases by -0.0030 With other factors remaining constant. 
+
+### The Hypotheses:
+
+Interaction:
+
+$H_0$:There is no interaction effect between pre-test scores and group 2 membership on post-test scores. 
+
+$H_1$:There is an interaction effect between pre-test scores and group 2 membership on post-test scores.  
+
+p$-value for $\hat{\beta}_2$= 0.6623 > $\alpha = 0.05$ , we Do not reject $H_0$ at  $\alpha = 0.05$,
+There is no interaction effect between pre-test scores and group 2 membership on post-test scores. 
+
+_____________________________________________________________________________________________________
+
+
+$H_0$:There is no interaction effect between pre-test scores and group 3 membership on post-test scores. 
+
+$H_1$:There is an interaction effect between pre-test scores and group 3 membership on post-test scores.
+
+
+p$-value for $\hat{\beta}_2$= 0.9784 > $\alpha = 0.05$ , we Do not reject $H_0$ at  $\alpha = 0.05$,
+There is no interaction effect between pre-test scores and group 3 membership on post-test scores. 
+
+______________________________________________________________________________________________________
+
+
+### Compare models: 
+we use Anova to compare the two models 
+
+```{r echo=FALSE}
+kable(anova(post_lm,post_lm1))
+```
+
+
+$H_0$: $B_4$=$B_5$=0. \
+
+$H_a$: $B_4$$\neq$$B_5$$\neq 0$
+
+$p-value$ = 0.8815 > $\alpha = 0.05$, we do not reject $H_0$ at $\alpha = 0.05$,
+The models are equal or The intersection has no effect or importance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
